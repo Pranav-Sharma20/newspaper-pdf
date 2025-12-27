@@ -95,7 +95,9 @@ def create_pdf_with_images(image_files: List[Path], output_path: Path,
             c.setFont("Helvetica-Bold", 16)
             text_x = 50
             text_y = page_height - 50
-            c.drawString(text_x, text_y, img_path.stem)
+            # Replace underscores with spaces for display
+            display_name = img_path.stem.replace('_', ' ')
+            c.drawString(text_x, text_y, display_name)
             
             # Reset fill color to black for image drawing
             c.setFillColorRGB(0, 0, 0)
@@ -129,15 +131,15 @@ def create_pdf_with_images(image_files: List[Path], output_path: Path,
             
             # Resize image to target dimensions to reduce file size
             # Convert points to pixels at 72 DPI
-            target_pixel_width = int(scaled_width * 1.5)  # Reduced from 2x to 1.5x
-            target_pixel_height = int(scaled_height * 1.5)
+            target_pixel_width = int(scaled_width * 2)  # Back to 2x for better quality
+            target_pixel_height = int(scaled_height * 2)
             
             if img_width > target_pixel_width or img_height > target_pixel_height:
                 img = img.resize((target_pixel_width, target_pixel_height), Image.LANCZOS)
             
-            # Save to temporary JPEG with compression for faster processing
+            # Save to temporary JPEG with higher quality for better clarity
             img_buffer = io.BytesIO()
-            img.save(img_buffer, format='JPEG', quality=85, optimize=True)
+            img.save(img_buffer, format='JPEG', quality=92, optimize=True)
             img_buffer.seek(0)
             
             # Center the image horizontally on the page
