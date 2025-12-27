@@ -8,6 +8,7 @@ from typing import List, Tuple
 from PIL import Image
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 import sys
 import tempfile
 import io
@@ -144,8 +145,9 @@ def create_pdf_with_images(image_files: List[Path], output_path: Path,
             # Position image below the heading
             img_y = page_height - 100 - scaled_height
             
-            # Draw the compressed image from buffer
-            c.drawImage(img_buffer, img_x, img_y, 
+            # Draw the compressed image using ImageReader
+            img_reader = ImageReader(img_buffer)
+            c.drawImage(img_reader, img_x, img_y, 
                        width=scaled_width, height=scaled_height,
                        preserveAspectRatio=True)
             
