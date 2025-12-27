@@ -9,6 +9,8 @@ from PIL import Image
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import sys
+import tempfile
+import io
 
 
 def split_by_semicolon(image_files: List[Path]) -> Tuple[List[Path], List[Path]]:
@@ -126,20 +128,26 @@ def create_pdf_with_images(image_files: List[Path], output_path: Path,
             
             # Resize image to target dimensions to reduce file size
             # Convert points to pixels at 72 DPI
-            target_pixel_width = int(scaled_width * 2)  # 2x for better quality
-            target_pixel_height = int(scaled_height * 2)
+            target_pixel_width = int(scaled_width * 1.5)  # Reduced from 2x to 1.5x
+            target_pixel_height = int(scaled_height * 1.5)
             
             if img_width > target_pixel_width or img_height > target_pixel_height:
                 img = img.resize((target_pixel_width, target_pixel_height), Image.LANCZOS)
+            
+            # Save to temporary JPEG with compression for faster processing
+            img_buffer = io.BytesIO()
+            img.save(img_buffer, format='JPEG', quality=85, optimize=True)
+            img_buffer.seek(0)
             
             # Center the image horizontally on the page
             img_x = (page_width - scaled_width) / 2
             # Position image below the heading
             img_y = page_height - 100 - scaled_height
             
-            # Draw the resized image with quality parameter
-            c.drawInlineImage(img, img_x, img_y, 
-                             width=scaled_width, height=scaled_height)
+            # Draw the compressed image from buffer
+            c.drawImage(img_buffer, img_x, img_y, 
+                       width=scaled_width, height=scaled_height,
+                       preserveAspectRatio=True)
             
             # Start new page for next image
             c.showPage()
